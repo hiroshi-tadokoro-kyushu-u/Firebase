@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="/js/jquery-2.1.3.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.5.1/gsap.min.js"></script>
+    <link rel="stylesheet" href="/css/reset.css">
+    <link rel="stylesheet" href="/css/Main_01.css">
+    <title>chat</title>
+</head>
+<body>
+
+<div class="input_area">
+    <div id="title">
+        Comment 2525
+    </div>
+    <div class="uname_space">
+        ID:<input type="text" id="uname">
+    </div>
+    
+    <textarea id="text" cols="50" rows="2">
+    </textarea>
+    <div>
+        <button id="send">
+            テキストを流す
+        </button>
+        
+        <button id="button01">x</button>
+    
+    </div>
+
+    <div id="output" style="overflow: auto; height: 500px; width: 1000px;">
+    </div>
+
+</div>
+
+<!-- JQuery -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+<!-- JQuery -->
+
+<!--** 以下Firebase **-->
+<!-- The core Firebase JS SDK is always required and must be listed first -->
+<script src="https://www.gstatic.com/firebasejs/8.6.1/firebase.js"></script>
+
+<!-- TODO: Add SDKs for Firebase products that you want to use
+     https://firebase.google.com/docs/web/setup#available-libraries -->
+
+</body>
+
+
+
+<script>
+    // Your web app's Firebase configuration
+    var firebaseConfig = {
+      apiKey: "AIzaSyDgVaR7ZRiGtnnBObI7y7hUZr83HTkXcng",
+      authDomain: "testpj-41439.firebaseapp.com",
+      projectId: "testpj-41439",
+      storageBucket: "testpj-41439.appspot.com",
+      messagingSenderId: "825785243490",
+      appId: "1:825785243490:web:770a7b670ccefe3408fe3b"
+    };
+    
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    const ref = firebase.database().ref();
+  
+  // 送信イベント
+  $("#send").on("click", function(){
+      const uname = $("#uname").val();
+      const text = $("#text").val();
+      const msg = {
+          uname:uname,
+          text:text
+      }
+      ref.push(msg);
+  })
+  
+  // 受信イベント
+  ref.on("child_added",function(data){
+      const v = data.val();
+      const k = data.key;
+    
+      const s ='<p>'+v.uname+'<br>'+v.text+'</p>';
+      $("#output").append(s);
+      $('#output').animate({scrollTop: $('#output')[0].scrollHeight}, 'fast');
+    
+      createText(v.uname,v.text)
+  
+  });
+  
+// スライド動画(テンプレから引用)
+
+const button01 = document.getElementById("button01");
+button01.addEventListener("click", function(){createText()}, false);
+let count = 0;
+
+async function createText(v_uname,v_text) {
+  let div_text = document.createElement('div');
+  div_text.id="text"+count; //アニメーション処理で対象の指定に必要なidを設定
+  count++;
+
+  div_text.style.position = 'fixed'; //テキストのは位置を絶対位置にするための設定
+  div_text.style.whiteSpace = 'nowrap' //画面右端での折り返しがなく、画面外へはみ出すようにする
+  div_text.style.left = (document.documentElement.clientWidth) + 'px'; //初期状態の横方向の位置は画面の右端に設定
+  var random = Math.round( Math.random()*document.documentElement.clientHeight );
+  div_text.style.top = random + 200 + 'px';  //初期状態の縦方向の位置は画面の上端から下端の間に設定（ランダムな配置に
+
+  div_text.appendChild(document.createTextNode(v_uname+'/'+v_text)); //画面上に表示されるテキストを設定
+  document.body.appendChild(div_text); //body直下へ挿入
+
+   //ライブラリを用いたテキスト移動のアニメーション： durationはアニメーションの時間、
+   //        横方向の移動距離は「画面の横幅＋画面を流れるテキストの要素の横幅」、移動中に次の削除処理がされないようawait
+  await gsap.to("#"+div_text.id, {duration: 15, x: -1*(document.documentElement.clientWidth+div_text.clientWidth)});
+
+  div_text.parentNode.removeChild(div_text); //画面上の移動終了後に削除
+}
+
+
+  </script>
+
+</html>
